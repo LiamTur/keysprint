@@ -1,14 +1,18 @@
 use std::time::{Duration, SystemTime};
 //use std::thread::sleep;
-use std::io;
+use std::io::{self, stdout};
+use crossterm::event::KeyCode;
+use crossterm::{execute, terminal::{Clear, ClearType}};
 
 fn main() {
+    execute!(stdout(), Clear(ClearType::All)).unwrap();
     println!("Hello, world!");
     let now = SystemTime::now();
     
-    let test: [char; 4] = ['f','i','n','e']; 
+    let test: [char; 6] = ['f','i','n','e',' ','1']; 
     println!("write 'fine', or x to escape:");
     let mut input_string = String::new();
+
 
     while input_string.trim() != "x" {
         let mut t = true;
@@ -16,7 +20,7 @@ fn main() {
         io::stdin().read_line(&mut input_string).unwrap();
         let chars: Vec<char> = input_string.trim().chars().collect();
         println!("You wrote {}", input_string);
-        for i in 0..4 {
+        for i in 0..6 {
             if test[i] != chars[i]{
                 t = false;
             }
