@@ -8,6 +8,7 @@ use crossterm::{
     cursor::MoveTo,
 };
 use scopeguard::defer;
+use rand::prelude::*;
 
 struct position {
     x: u16,
@@ -25,10 +26,22 @@ fn main() -> io::Result<()> {
     execute!(stdout(), MoveTo(position.x / 4, position.y / 4))?;
     println!("Hello, world!");
     let now = SystemTime::now();
+
+    let mut rng = rand::rng();
+
+    let mut nums: Vec<i32> = (0..6).collect();
+    nums.shuffle(&mut rng);
+
+    let random: usize = nums
+        .choose(&mut rng)
+        .map(|&n| n as usize)
+        .unwrap();
+
+    let words = ["test", "fine", "method", "string", "vote", "fire", "guest"];
     
-    let test = ['f','i','n','e',' ','1'];
+    let test: Vec<char> = words[random].chars().collect();
     let mut score: usize = 0;
-    println!("write {}, or x to escape:", String::from_iter(test));
+    println!("write {}, or x to escape:", String::from_iter(test.clone()));
 
 
     fn print_key_event(key: KeyEvent) {
@@ -50,7 +63,7 @@ fn main() -> io::Result<()> {
         let _ = disable_raw_mode();
     }
     loop {
-        if score == 6
+        if score == test.len()
         {
             print!("You are done!");
             stdout().flush()?;
@@ -80,6 +93,8 @@ fn main() -> io::Result<()> {
     match now.elapsed() {
         Ok(elapsed) => {
             println!("{}", elapsed.as_secs());
+            //let mut wpm = score/elapsed.as_mins();
+            //println!("wpm: ", wpm);
         }
         Err(e) => {
             println!("what? {e:?}");
