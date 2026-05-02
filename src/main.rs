@@ -56,8 +56,8 @@ fn main() -> io::Result<()> {
     };
  
     match key.code {
-        KeyCode::Char(c) => print!("Key: '{}' (Modifiers: {})", c, modifiers),
-        code => print!("Key: {:?} (Modifiers: {})", code, modifiers),
+        KeyCode::Char(c) => print!("{}", c),
+        code => print!("{:?}", code),
         }
         stdout().flush();
     }
@@ -82,7 +82,6 @@ fn main() -> io::Result<()> {
                     }
                     print_key_event(key);
                     if key.code == KeyCode::Char(test[score]) {
-                        print!("that's correct!");
                         stdout().flush()?;
                         score += 1;
                     }
@@ -94,7 +93,10 @@ fn main() -> io::Result<()> {
  
     match now.elapsed() {
         Ok(elapsed) => {
-            println!("{}", elapsed.as_secs());
+            let time = elapsed.as_secs_f64();
+            let wpm = (test.len() as f64 / 5.0) / (time / 60.0);
+
+            println!("wpm: {:.2}", wpm);
             //let mut wpm = score/elapsed.as_mins();
             //println!("wpm: ", wpm);
         }
