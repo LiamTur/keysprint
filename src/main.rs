@@ -24,12 +24,15 @@ fn main() -> io::Result<()> {
         y: height,
     };    
     execute!(stdout(), MoveTo(position.x / 4, position.y / 4))?;
-    println!("Hello, world!");
     let now = SystemTime::now();
+
+    let words = ["test", "fine", "method", "string", "vote", "fire", "guest"];
+
+    let lenght: i32 = (words.len() - 1) as i32;
 
     let mut rng = rand::rng();
 
-    let mut nums: Vec<i32> = (0..6).collect();
+    let mut nums: Vec<i32> = (0..lenght).collect();
     nums.shuffle(&mut rng);
 
     let random: usize = nums
@@ -37,7 +40,6 @@ fn main() -> io::Result<()> {
         .map(|&n| n as usize)
         .unwrap();
 
-    let words = ["test", "fine", "method", "string", "vote", "fire", "guest"];
     
     let test: Vec<char> = words[random].chars().collect();
     let mut score: usize = 0;
