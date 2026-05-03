@@ -28,6 +28,8 @@ fn main() -> io::Result<()> {
 
     let words = ["test", "fine", "method", "string", "vote", "fire", "guest"];
 
+    let amount_of_words
+
     let lenght: i32 = (words.len() - 1) as i32;
 
     let mut rng = rand::rng();
@@ -45,6 +47,9 @@ fn main() -> io::Result<()> {
     let mut score: usize = 0;
     println!("write {}, or x to escape:", String::from_iter(test.clone()));
 
+    fn choose_random_word(){
+        
+    }
 
     fn print_key_event(key: KeyEvent) {
     let modifiers = match key.modifiers {
