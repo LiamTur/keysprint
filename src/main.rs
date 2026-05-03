@@ -28,7 +28,7 @@ fn main() -> io::Result<()> {
 
     let words = ["test", "fine", "method", "string", "vote", "fire", "guest"];
 
-    let amount_of_words
+    let amount_of_words: usize = 5;
 
     let lenght: i32 = (words.len() - 1) as i32;
 
@@ -43,12 +43,17 @@ fn main() -> io::Result<()> {
         .unwrap();
 
     
-    let test: Vec<char> = words[random].chars().collect();
     let mut score: usize = 0;
-    println!("write {}, or x to escape:", String::from_iter(test.clone()));
-
-    fn choose_random_word(){
-        
+    fn choose_random_word(words: &[&str]) -> Vec<char>{
+        let lenght: i32 = (words.len() - 1) as i32;
+        let mut rng = rand::rng();
+        let mut nums: Vec<i32> = (0..lenght).collect();
+        nums.shuffle(&mut rng);
+        let random: usize = nums
+            .choose(&mut rng)
+            .map(|&n| n as usize)
+            .unwrap();
+        words[random].chars().collect()
     }
 
     fn print_key_event(key: KeyEvent) {
@@ -66,15 +71,30 @@ fn main() -> io::Result<()> {
         }
         stdout().flush();
     }
+
+    let mut to_be = 0;
+
+    let mut test: Vec<char> = choose_random_word(&words);
+
+    println!("write {}, or x to escape:", String::from_iter(test.clone()));
     defer! {
         let _ = disable_raw_mode();
     }
     loop {
-        if score == test.len()
-        {
+        if to_be == amount_of_words {
             print!("You are done!");
             stdout().flush()?;
             break;
+        }
+        if score == test.len() // new word
+        {
+            to_be += 1;
+            print!("new word!");
+            stdout().flush()?;
+            test = choose_random_word(&words);
+            score = 0;
+            println!("write {}, or x to escape:", String::from_iter(test.clone()));
+            //break;
         }
         if event::poll(std::time::Duration::from_millis(50))? {
             match event::read()? {
@@ -99,7 +119,7 @@ fn main() -> io::Result<()> {
     match now.elapsed() {
         Ok(elapsed) => {
             let time = elapsed.as_secs_f64();
-            let wpm = (test.len() as f64 / 5.0) / (time / 60.0);
+            let wpm = (amount_of_words as f64 / 5.0) / (time / 60.0);
 
             println!("wpm: {:.2}", wpm);
             //let mut wpm = score/elapsed.as_mins();
