@@ -15,6 +15,8 @@ struct position {
     y: u16
 }
 
+//NOTE: Idea randomize the entire array and print it once?
+
 fn main() -> io::Result<()> {
     enable_raw_mode()?;
     execute!(stdout(), Clear(ClearType::All)).unwrap();
@@ -26,23 +28,10 @@ fn main() -> io::Result<()> {
     execute!(stdout(), MoveTo(position.x / 4, position.y / 4))?;
     let now = SystemTime::now();
 
-    let words = ["test", "fine", "method", "string", "vote", "fire", "guest"];
+    let words = ["test", "fine", "method", "string", "vote", "fire", "guest", "mutation", "laser", "truncate"];
 
     let amount_of_words: usize = 5;
 
-    let lenght: i32 = (words.len() - 1) as i32;
-
-    let mut rng = rand::rng();
-
-    let mut nums: Vec<i32> = (0..lenght).collect();
-    nums.shuffle(&mut rng);
-
-    let random: usize = nums
-        .choose(&mut rng)
-        .map(|&n| n as usize)
-        .unwrap();
-
-    
     let mut score: usize = 0;
     fn choose_random_word(words: &[&str]) -> Vec<char>{
         let lenght: i32 = (words.len() - 1) as i32;
@@ -82,18 +71,18 @@ fn main() -> io::Result<()> {
     }
     loop {
         if to_be == amount_of_words {
-            print!("You are done!");
+            print!("You are done! ");
             stdout().flush()?;
             break;
         }
         if score == test.len() // new word
         {
             to_be += 1;
-            print!("new word!");
+            print!("new word! ");
             stdout().flush()?;
             test = choose_random_word(&words);
             score = 0;
-            println!("write {}, or x to escape:", String::from_iter(test.clone()));
+            println!(" {}", String::from_iter(test.clone()));
             //break;
         }
         if event::poll(std::time::Duration::from_millis(50))? {
@@ -119,7 +108,7 @@ fn main() -> io::Result<()> {
     match now.elapsed() {
         Ok(elapsed) => {
             let time = elapsed.as_secs_f64();
-            let wpm = (amount_of_words as f64 / 5.0) / (time / 60.0);
+            let wpm = (amount_of_words as f64) / (time / 60.0);
 
             println!("wpm: {:.2}", wpm);
             //let mut wpm = score/elapsed.as_mins();
