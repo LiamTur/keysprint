@@ -5,7 +5,7 @@ use crossterm::{
     execute,
     event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType, size},
-    cursor::MoveTo,
+    cursor::{MoveTo,MoveLeft},
 };
 use scopeguard::defer;
 use rand::prelude::*;
@@ -14,6 +14,8 @@ struct position {
     x: u16,
     y: u16
 }
+
+//NOTE: Idea randomize the entire array and print it once?
 
 fn main() -> io::Result<()> {
     enable_raw_mode()?;
@@ -26,25 +28,24 @@ fn main() -> io::Result<()> {
     execute!(stdout(), MoveTo(position.x / 4, position.y / 4))?;
     let now = SystemTime::now();
 
-    let words = ["test", "fine", "method", "string", "vote", "fire", "guest"];
+    let words = ["test", "fine", "method", "string", "vote", "fire", "guest", "mutation", "laser", "truncate"];
 
-    let lenght: i32 = (words.len() - 1) as i32;
+    let amount_of_words: usize = 5;
 
-    let mut rng = rand::rng();
+    let mut overflow_letters: usize = 0;
 
-    let mut nums: Vec<i32> = (0..lenght).collect();
-    nums.shuffle(&mut rng);
-
-    let random: usize = nums
-        .choose(&mut rng)
-        .map(|&n| n as usize)
-        .unwrap();
-
-    
-    let test: Vec<char> = words[random].chars().collect();
     let mut score: usize = 0;
-    println!("write {}, or x to escape:", String::from_iter(test.clone()));
-
+    fn choose_random_word(words: &[&str]) -> Vec<char>{
+        let lenght: i32 = (words.len() - 1) as i32;
+        let mut rng = rand::rng();
+        let mut nums: Vec<i32> = (0..lenght).collect();
+        nums.shuffle(&mut rng);
+        let random: usize = nums
+            .choose(&mut rng)
+            .map(|&n| n as usize)
+            .unwrap();
+        words[random].chars().collect()
+    }
 
     fn print_key_event(key: KeyEvent) {
     let modifiers = match key.modifiers {
@@ -61,15 +62,30 @@ fn main() -> io::Result<()> {
         }
         stdout().flush();
     }
+
+    let mut to_be = 0;
+
+    let mut test: Vec<char> = choose_random_word(&words);
+
+    println!("write {}, or x to escape:", String::from_iter(test.clone()));
     defer! {
         let _ = disable_raw_mode();
     }
     loop {
-        if score == test.len()
-        {
-            print!("You are done!");
+        if to_be == amount_of_words {
+            print!("You are done! ");
             stdout().flush()?;
             break;
+        }
+        if score == test.len() // new word
+        {
+            to_be += 1;
+            print!("new word! ");
+            stdout().flush()?;
+            test = choose_random_word(&words);
+            score = 0;
+            println!(" {}", String::from_iter(test.clone()));
+            //break;
         }
         if event::poll(std::time::Duration::from_millis(50))? {
             match event::read()? {
@@ -80,10 +96,26 @@ fn main() -> io::Result<()> {
                         stdout().flush()?;
                         break;
                     }
-                    print_key_event(key);
-                    if key.code == KeyCode::Char(test[score]) {
+                    if  key.code == KeyCode::Backspace {
+
+                        execute!(stdout(), MoveLeft(1))?;
+                        execute!(stdout(), Clear(ClearType::UntilNewLine)).unwrap();
+                        if overflow_letters <= 1 {
+                            overflow_letters = 0;
+                            score -= 1;
+                        }else {
+                            overflow_letters -= 1;
+                        }
+                    }
+                    if key.code == KeyCode::Char(test[score]) && overflow_letters == 0 {
+                        print_key_event(key);
                         stdout().flush()?;
                         score += 1;
+                    }else {
+                        if key.code != KeyCode::Backspace {
+                            overflow_letters += 1;
+                            println!("Wrong letters amount: {}", overflow_letters);
+                        }
                     }
                 }
                 _ => {}
@@ -94,7 +126,7 @@ fn main() -> io::Result<()> {
     match now.elapsed() {
         Ok(elapsed) => {
             let time = elapsed.as_secs_f64();
-            let wpm = (test.len() as f64 / 5.0) / (time / 60.0);
+            let wpm = (amount_of_words as f64) / (time / 60.0);
 
             println!("wpm: {:.2}", wpm);
             //let mut wpm = score/elapsed.as_mins();
