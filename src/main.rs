@@ -5,7 +5,7 @@ use crossterm::{
     execute,
     event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType, size},
-    cursor::MoveTo,
+    cursor::{MoveTo,MoveLeft},
 };
 use scopeguard::defer;
 use rand::prelude::*;
@@ -97,15 +97,18 @@ fn main() -> io::Result<()> {
                         break;
                     }
                     if  key.code == KeyCode::Backspace {
-                        println!("back");
+
+                        execute!(stdout(), MoveLeft(1))?;
+                        execute!(stdout(), Clear(ClearType::UntilNewLine)).unwrap();
                         if overflow_letters <= 1 {
                             overflow_letters = 0;
+                            score -= 1;
                         }else {
                             overflow_letters -= 1;
                         }
                     }
-                    print_key_event(key);
                     if key.code == KeyCode::Char(test[score]) && overflow_letters == 0 {
+                        print_key_event(key);
                         stdout().flush()?;
                         score += 1;
                     }else {
