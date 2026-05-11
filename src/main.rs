@@ -32,6 +32,8 @@ fn main() -> io::Result<()> {
 
     let amount_of_words: usize = 5;
 
+    let mut overflow_letters: usize = 0;
+
     let mut score: usize = 0;
     fn choose_random_word(words: &[&str]) -> Vec<char>{
         let lenght: i32 = (words.len() - 1) as i32;
@@ -94,10 +96,23 @@ fn main() -> io::Result<()> {
                         stdout().flush()?;
                         break;
                     }
+                    if  key.code == KeyCode::Backspace {
+                        println!("back");
+                        if overflow_letters <= 1 {
+                            overflow_letters = 0;
+                        }else {
+                            overflow_letters -= 1;
+                        }
+                    }
                     print_key_event(key);
-                    if key.code == KeyCode::Char(test[score]) {
+                    if key.code == KeyCode::Char(test[score]) && overflow_letters == 0 {
                         stdout().flush()?;
                         score += 1;
+                    }else {
+                        if key.code != KeyCode::Backspace {
+                            overflow_letters += 1;
+                            println!("Wrong letters amount: {}", overflow_letters);
+                        }
                     }
                 }
                 _ => {}
