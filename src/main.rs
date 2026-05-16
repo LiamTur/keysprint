@@ -6,6 +6,7 @@ use crossterm::{
     event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType, size},
     cursor::{MoveTo,MoveLeft,MoveRight},
+    style::{Print, SetForegroundColor, SetBackgroundColor, ResetColor, Color, Attribute},
 };
 use scopeguard::defer;
 use rand::prelude::*;
