@@ -5,7 +5,7 @@ use crossterm::{
     execute,
     event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType, size},
-    cursor::{MoveTo,MoveLeft},
+    cursor::{MoveTo,MoveLeft,MoveRight},
 };
 use scopeguard::defer;
 use rand::prelude::*;
@@ -114,10 +114,14 @@ fn main() -> io::Result<()> {
                         stdout().flush()?;
                         test = displayed_w[to_be].clone();
                         score = 0;
+                        execute!(stdout(), MoveRight(1))?;
             //println!(" {}", String::from_iter(test.clone()));
             //break;
                     }
-                    if key.code == KeyCode::Char(test[score]) && overflow_letters == 0{
+                    if score < test.len() 
+                    {
+                    if key.code == KeyCode::Char(test[score]) && overflow_letters == 0
+                    {
                         //println!("this: {:?}", key.code);
                         print_key_event(key);
                         stdout().flush()?;
@@ -126,14 +130,20 @@ fn main() -> io::Result<()> {
                         }else{
                             score += 1;
                         }
-                        //print!("{} ",score);
                     }else {
                         if key.code != KeyCode::Backspace && key.code != KeyCode::Char(' ') {
-                        println!("this: {:?}", key.code);
-//Char(' ')
                             overflow_letters += 1;
-                            println!("Wrong letters amount: {}", overflow_letters);
+                            print_key_event(key);
+                            //print!("Wrong letters amount: {}", overflow_letters);
+                            stdout().flush()?;
                         }
+                    }
+                    }else if key.code != KeyCode::Backspace
+                    {
+                        overflow_letters += 1;
+                        print_key_event(key);
+                        //print!("Wrong letters amount: {}", overflow_letters);
+                        stdout().flush()?;
                     }
                 }
                 _ => {}
