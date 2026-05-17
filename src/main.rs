@@ -5,7 +5,8 @@ use crossterm::{
     execute,
     event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType, size},
-    cursor::{MoveTo,MoveLeft},
+    cursor::{MoveTo,MoveLeft,MoveRight},
+    style::{Print, SetForegroundColor, SetBackgroundColor, ResetColor, Color, Attribute},
 };
 use scopeguard::defer;
 use rand::prelude::*;
@@ -62,10 +63,18 @@ fn main() -> io::Result<()> {
         }
         stdout().flush();
     }
+    
+    let mut displayed_w: Vec<Vec<char>> = Vec::new();
+
+    for i in 0..amount_of_words+1 {
+        displayed_w.push(choose_random_word(&words));
+        let word: String = displayed_w[i].iter().collect();
+        print!("{} ", word);
+    }
 
     let mut to_be = 0;
 
-    let mut test: Vec<char> = choose_random_word(&words);
+    let mut test: Vec<char> = displayed_w[to_be].clone();
 
     println!("write {}, or x to escape:", String::from_iter(test.clone()));
     defer! {
@@ -77,16 +86,6 @@ fn main() -> io::Result<()> {
             stdout().flush()?;
             break;
         }
-        if score == test.len() // new word
-        {
-            to_be += 1;
-            print!("new word! ");
-            stdout().flush()?;
-            test = choose_random_word(&words);
-            score = 0;
-            println!(" {}", String::from_iter(test.clone()));
-            //break;
-        }
         if event::poll(std::time::Duration::from_millis(50))? {
             match event::read()? {
                 Event::Key(key) => {
@@ -97,25 +96,55 @@ fn main() -> io::Result<()> {
                         break;
                     }
                     if  key.code == KeyCode::Backspace {
-
                         execute!(stdout(), MoveLeft(1))?;
                         execute!(stdout(), Clear(ClearType::UntilNewLine)).unwrap();
-                        if overflow_letters <= 1 {
+                        if overflow_letters <= 0 {
                             overflow_letters = 0;
-                            score -= 1;
+                            if score == 0{
+                                score = 0;
+                            }else{
+                                score -= 1;
+                            }
                         }else {
                             overflow_letters -= 1;
                         }
                     }
-                    if key.code == KeyCode::Char(test[score]) && overflow_letters == 0 {
+                    if score == test.len() && key.code == KeyCode::Char(' ') // new word
+                    {
+                        to_be += 1;
+                        stdout().flush()?;
+                        test = displayed_w[to_be].clone();
+                        score = 0;
+                        execute!(stdout(), MoveRight(1))?;
+            //println!(" {}", String::from_iter(test.clone()));
+            //break;
+                    }
+                    if score < test.len() 
+                    {
+                    if key.code == KeyCode::Char(test[score]) && overflow_letters == 0
+                    {
+                        //println!("this: {:?}", key.code);
                         print_key_event(key);
                         stdout().flush()?;
-                        score += 1;
-                    }else {
-                        if key.code != KeyCode::Backspace {
+                        if score >= test.len() {
                             overflow_letters += 1;
-                            println!("Wrong letters amount: {}", overflow_letters);
+                        }else{
+                            score += 1;
                         }
+                    }else {
+                        if key.code != KeyCode::Backspace && key.code != KeyCode::Char(' ') {
+                            overflow_letters += 1;
+                            print_key_event(key);
+                            //print!("Wrong letters amount: {}", overflow_letters);
+                            stdout().flush()?;
+                        }
+                    }
+                    }else if key.code != KeyCode::Backspace
+                    {
+                        overflow_letters += 1;
+                        print_key_event(key);
+                        //print!("Wrong letters amount: {}", overflow_letters);
+                        stdout().flush()?;
                     }
                 }
                 _ => {}
