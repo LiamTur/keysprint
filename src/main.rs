@@ -31,7 +31,7 @@ fn main() -> io::Result<()> {
 
     let words = ["test", "fine", "method", "string", "vote", "fire", "guest", "mutation", "laser", "truncate"];
 
-    let amount_of_words: usize = 5;
+    let amount_of_words: usize = 10;
 
     let mut overflow_letters: usize = 0;
 
@@ -66,7 +66,7 @@ fn main() -> io::Result<()> {
     
     let mut displayed_w: Vec<Vec<char>> = Vec::new();
 
-    for i in 0..amount_of_words {
+    for i in 0..amount_of_words+1 {
         displayed_w.push(choose_random_word(&words));
         let word: String = displayed_w[i].iter().collect();
         print!("{} ", word);
@@ -80,6 +80,7 @@ fn main() -> io::Result<()> {
     defer! {
         let _ = disable_raw_mode();
     }
+
     loop {
         if to_be == amount_of_words {
             print!("You are done! ");
