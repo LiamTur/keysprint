@@ -3,7 +3,7 @@ use std::time::{Duration, SystemTime};
 use std::io::{self, stdout, Write};
 use crossterm::{
     execute,
-    event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
+    event::{self, Event, KeyCode, KeyEvent, KeyModifiers, read},
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType, size},
     cursor::{MoveTo,MoveLeft,MoveRight,MoveDown, SavePosition, RestorePosition},
     style::{Print, SetForegroundColor, SetBackgroundColor, ResetColor, Color, Attribute},
@@ -50,13 +50,12 @@ fn main() -> io::Result<()> {
     execute!(stdout(), MoveDown(2));
     execute!(stdout(), MoveLeft(84));
 
-    execute!(stdout(), SavePosition);
 
-    let now = SystemTime::now();
 
-    let words = ["test", "fine", "method", "string", "vote", "fire", "guest", "mutation", "laser", "truncate"];
 
-    let amount_of_words: usize = 10;
+    let words = ["test", "fine", "method", "string", "vote", "fire", "guest", "mutation", "laser", "truncate", "hobby", "impulse", "reinforce", "motorist", "spit", "scene", "warm", "relinquish", "owe", "realism", "channel", "extinct", "ankel", "punish", "wait", "abolish", "progressive", "begin", "foster"];
+
+    let amount_of_words: usize = 15;
 
     let mut overflow_letters: usize = 0;
 
@@ -88,20 +87,45 @@ fn main() -> io::Result<()> {
         }
         stdout().flush();
     }
+
+
+    fn timeupdate(width: u16, height: u16, now: SystemTime){
+        execute!(stdout(), SavePosition);
+        execute!(stdout(), MoveTo(width/2, height));
+
+
+        match now.elapsed() {
+        Ok(elapsed) => {
+            let time = elapsed.as_secs_f64();
+            print!("time: {:.2}", time);
+            stdout().flush();
+        }
+        Err(e) => {
+            print!("what? {e:?}");
+            stdout().flush();
+        }
+    }
+
+        execute!(stdout(), RestorePosition);
+    }
     
     let mut displayed_w: Vec<Vec<char>> = Vec::new();
 
+    println!("write the words shown, or Ctrl+c to escape, to start press any button:");
+    execute!(stdout(), MoveLeft(80));
+
+    execute!(stdout(), SavePosition);
     for i in 0..amount_of_words+1 {
         displayed_w.push(choose_random_word(&words));
         let word: String = displayed_w[i].iter().collect();
         print!("{} ", word);
     }
 
+
     let mut to_be = 0;
 
     let mut test: Vec<char> = displayed_w[to_be].clone();
 
-    println!(" write {}, or x to escape:", String::from_iter(test.clone()));
     execute!(stdout(), RestorePosition);
     execute!(stdout(), MoveDown(4));
 
@@ -110,13 +134,27 @@ fn main() -> io::Result<()> {
     }
 
     loop {
-        if to_be == amount_of_words {
+        let event = read()?;
+
+        match event {
+            Event::Key(KeyEvent { .. }) => {
+                break;
+            }
+            _ => {}
+        }
+    }
+    let now = SystemTime::now();
+
+
+    loop {
+        timeupdate(position.x, position.y, now);
+        if to_be == amount_of_words+1 {
             print!("You are done! ");
             stdout().flush()?;
             break;
         }
         if event::poll(std::time::Duration::from_millis(50))? {
-            match event::read()? {
+            match read()? {
                 Event::Key(key) => {
                     // Quit on Ctrl+C
                     if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
@@ -147,6 +185,11 @@ fn main() -> io::Result<()> {
                         execute!(stdout(), ResetColor);
                         to_be += 1;
                         stdout().flush()?;
+                        if to_be == amount_of_words+1 {
+                            print!(" You are done! ");
+                            stdout().flush()?;
+                            break;
+                        }
                         test = displayed_w[to_be].clone();
                         score = 0;
                         execute!(stdout(), MoveRight(1))?;
