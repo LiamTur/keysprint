@@ -5,7 +5,7 @@ use crossterm::{
     execute,
     event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType, size},
-    cursor::{MoveTo,MoveLeft,MoveRight},
+    cursor::{MoveTo,MoveLeft,MoveRight,MoveDown, SavePosition, RestorePosition},
     style::{Print, SetForegroundColor, SetBackgroundColor, ResetColor, Color, Attribute},
 };
 use scopeguard::defer;
@@ -16,9 +16,6 @@ struct position {
     y: u16
 }
 
-//NOTE: Idea randomize the entire array and print it once?
-//
-//
 
 //      //   // //////  //      // ////////   ///////  ///////    //////  //     //   //////////
 //      //  //  //        //  //   //         //    // //    //     //    ////   //       //
@@ -34,7 +31,27 @@ fn main() -> io::Result<()> {
         x: width,
         y: height,
     };    
+
     execute!(stdout(), MoveTo(position.x / 4, position.y / 4))?;
+    execute!(stdout(), MoveRight(10));
+    print!("//   // //////  //      // ////////   ///////  ///////    //////  //     //   //////////");
+    execute!(stdout(), MoveDown(1));
+    execute!(stdout(), MoveLeft(88));
+    print!("//  //  //        //  //   //         //    // //    //     //    ////   //       //");
+    execute!(stdout(), MoveDown(1));
+    execute!(stdout(), MoveLeft(84));
+    print!("////    ////        //     ///////    ///////  ///////      //    //  // //       //");
+    execute!(stdout(), MoveDown(1));
+    execute!(stdout(), MoveLeft(84));
+    print!("// //   //          //          //    //       //   //      //    //   ////       //");
+    execute!(stdout(), MoveDown(1));
+    execute!(stdout(), MoveLeft(84));
+    print!("//  //  //////      //    ////////    //       //    //   //////  //     //       //");
+    execute!(stdout(), MoveDown(2));
+    execute!(stdout(), MoveLeft(84));
+
+    execute!(stdout(), SavePosition);
+
     let now = SystemTime::now();
 
     let words = ["test", "fine", "method", "string", "vote", "fire", "guest", "mutation", "laser", "truncate"];
@@ -84,7 +101,10 @@ fn main() -> io::Result<()> {
 
     let mut test: Vec<char> = displayed_w[to_be].clone();
 
-    println!("write {}, or x to escape:", String::from_iter(test.clone()));
+    println!(" write {}, or x to escape:", String::from_iter(test.clone()));
+    execute!(stdout(), RestorePosition);
+    execute!(stdout(), MoveDown(4));
+
     defer! {
         let _ = disable_raw_mode();
     }
@@ -122,7 +142,7 @@ fn main() -> io::Result<()> {
                             overflow_letters -= 1;
                         }
                     }
-                    if score == test.len() && key.code == KeyCode::Char(' ') // new word
+                    if score == test.len() && key.code == KeyCode::Char(' ')
                     {
                         execute!(stdout(), ResetColor);
                         to_be += 1;
@@ -153,6 +173,7 @@ fn main() -> io::Result<()> {
                     }
                     }else if key.code != KeyCode::Backspace
                     {
+                        execute!(stdout(),SetForegroundColor(Color::Red));
                         overflow_letters += 1;
                         print_key_event(key);
                         stdout().flush()?;
@@ -169,8 +190,6 @@ fn main() -> io::Result<()> {
             let wpm = (amount_of_words as f64) / (time / 60.0);
 
             println!("wpm: {:.2}", wpm);
-            //let mut wpm = score/elapsed.as_mins();
-            //println!("wpm: ", wpm);
         }
         Err(e) => {
             println!("what? {e:?}");
