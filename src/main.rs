@@ -17,6 +17,14 @@ struct position {
 }
 
 //NOTE: Idea randomize the entire array and print it once?
+//
+//
+
+//      //   // //////  //      // ////////   ///////  ///////    //////  //     //   //////////
+//      //  //  //        //  //   //         //    // //    //     //    ////   //       //
+//      ////    ////        //     ///////    ///////  ///////      //    //  // //       //
+//      // //   //          //          //    //       //   //      //    //   ////       //
+//      //  //  //////      //    ////////    //       //    //   //////  //     //       //
 
 fn main() -> io::Result<()> {
     enable_raw_mode()?;
@@ -37,7 +45,7 @@ fn main() -> io::Result<()> {
 
     let mut score: usize = 0;
     fn choose_random_word(words: &[&str]) -> Vec<char>{
-        let lenght: i32 = (words.len() - 1) as i32;
+        let lenght: i32 = (words.len()) as i32;
         let mut rng = rand::rng();
         let mut nums: Vec<i32> = (0..lenght).collect();
         nums.shuffle(&mut rng);
@@ -122,14 +130,11 @@ fn main() -> io::Result<()> {
                         test = displayed_w[to_be].clone();
                         score = 0;
                         execute!(stdout(), MoveRight(1))?;
-            //println!(" {}", String::from_iter(test.clone()));
-            //break;
                     }
                     if score < test.len() 
                     {
                     if key.code == KeyCode::Char(test[score]) && overflow_letters == 0
                     {
-                        //println!("this: {:?}", key.code);
                         print_key_event(key);
                         stdout().flush()?;
                         if score >= test.len() {
@@ -143,7 +148,6 @@ fn main() -> io::Result<()> {
                             overflow_letters += 1;
                            execute!(stdout(),SetForegroundColor(Color::Red));
                             print_key_event(key);
-                            //print!("Wrong letters amount: {}", overflow_letters);
                             stdout().flush()?;
                         }
                     }
@@ -151,7 +155,6 @@ fn main() -> io::Result<()> {
                     {
                         overflow_letters += 1;
                         print_key_event(key);
-                        //print!("Wrong letters amount: {}", overflow_letters);
                         stdout().flush()?;
                     }
                 }
