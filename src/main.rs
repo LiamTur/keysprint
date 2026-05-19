@@ -66,7 +66,7 @@ fn main() -> io::Result<()> {
     
     let mut displayed_w: Vec<Vec<char>> = Vec::new();
 
-    for i in 0..amount_of_words+1 {
+    for i in 0..amount_of_words {
         displayed_w.push(choose_random_word(&words));
         let word: String = displayed_w[i].iter().collect();
         print!("{} ", word);
@@ -101,16 +101,21 @@ fn main() -> io::Result<()> {
                         if overflow_letters <= 0 {
                             overflow_letters = 0;
                             if score == 0{
+                                execute!(stdout(), ResetColor);
                                 score = 0;
                             }else{
                                 score -= 1;
                             }
                         }else {
+                            if overflow_letters == 1{
+                                execute!(stdout(), ResetColor);
+                            }
                             overflow_letters -= 1;
                         }
                     }
                     if score == test.len() && key.code == KeyCode::Char(' ') // new word
                     {
+                        execute!(stdout(), ResetColor);
                         to_be += 1;
                         stdout().flush()?;
                         test = displayed_w[to_be].clone();
@@ -127,6 +132,7 @@ fn main() -> io::Result<()> {
                         print_key_event(key);
                         stdout().flush()?;
                         if score >= test.len() {
+                            execute!(stdout(),SetForegroundColor(Color::Red));
                             overflow_letters += 1;
                         }else{
                             score += 1;
@@ -134,6 +140,7 @@ fn main() -> io::Result<()> {
                     }else {
                         if key.code != KeyCode::Backspace && key.code != KeyCode::Char(' ') {
                             overflow_letters += 1;
+                           execute!(stdout(),SetForegroundColor(Color::Red));
                             print_key_event(key);
                             //print!("Wrong letters amount: {}", overflow_letters);
                             stdout().flush()?;
