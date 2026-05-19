@@ -32,8 +32,9 @@ fn main() -> io::Result<()> {
         y: height,
     };    
 
-    execute!(stdout(), MoveTo(position.x / 4, position.y / 4))?;
-    execute!(stdout(), MoveRight(10));
+    execute!(stdout(),SetForegroundColor(Color::Rgb{r:185, g:71, b:0}));
+    execute!(stdout(), MoveTo(position.x / 2, position.y / 4))?;
+    execute!(stdout(), MoveLeft(44));
     print!("//   // //////  //      // ////////   ///////  ///////    //////  //     //   //////////");
     execute!(stdout(), MoveDown(1));
     execute!(stdout(), MoveLeft(88));
@@ -49,7 +50,7 @@ fn main() -> io::Result<()> {
     print!("//  //  //////      //    ////////    //       //    //   //////  //     //       //");
     execute!(stdout(), MoveDown(2));
     execute!(stdout(), MoveLeft(84));
-
+    execute!(stdout(), ResetColor);
 
 
 
@@ -111,9 +112,9 @@ fn main() -> io::Result<()> {
     
     let mut displayed_w: Vec<Vec<char>> = Vec::new();
 
-    println!("write the words shown, or Ctrl+c to escape, to start press any button:");
-    execute!(stdout(), MoveLeft(80));
-
+    println!("write the words shown and press space after each, or Ctrl+c to escape, to start press any button:");
+    execute!(stdout(), MoveLeft(107));
+    execute!(stdout(), MoveDown(1));
     execute!(stdout(), SavePosition);
     for i in 0..amount_of_words+1 {
         displayed_w.push(choose_random_word(&words));
@@ -148,11 +149,6 @@ fn main() -> io::Result<()> {
 
     loop {
         timeupdate(position.x, position.y, now);
-        if to_be == amount_of_words+1 {
-            print!("You are done! ");
-            stdout().flush()?;
-            break;
-        }
         if event::poll(std::time::Duration::from_millis(50))? {
             match read()? {
                 Event::Key(key) => {
